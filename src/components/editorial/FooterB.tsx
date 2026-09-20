@@ -24,7 +24,7 @@ function FooterLink({ label, href, external }: LinkItem) {
   );
 }
 
-/** Figma "Footer B": cream surface, logo + description, three "— Label" columns, bottom row with a rule above. */
+/** Figma "Footer B": cream surface, logo + description, label columns, bottom row with a rule above. */
 export function FooterB({
   description = site.footer.description,
   columns = site.footer.columns,
@@ -39,7 +39,7 @@ export function FooterB({
       <Container className="flex flex-col gap-48">
         <div className="flex flex-col gap-28 md:flex-row md:gap-32 xl:gap-48">
           <div className="flex flex-col gap-14 md:w-[220px] md:shrink-0 xl:w-[300px]">
-            <Image src="/images/logo.png" alt="Wake Up" width={1753} height={923} className="h-[63px] w-auto" />
+            <Image src="/images/logo.png" alt="Wake Up" width={120} height={63} className="h-auto w-[120px]" />
             <Text size={3} tone="muted">
               {description}
             </Text>

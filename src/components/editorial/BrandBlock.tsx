@@ -22,10 +22,10 @@ export function BrandBlock({ wordmark = WORDMARK, className }: { wordmark?: stri
         <Image
           src="/images/logo.png"
           alt=""
-          width={1753}
-          height={923}
+          width={238}
+          height={125}
           priority
-          className="h-[105px] w-auto md:h-[88px] xl:h-[124px]"
+          className="h-auto w-[200px] md:w-[169px] xl:w-[238px]"
         />
       </Link>
       <span className="text-h4 text-accent [font-variant-emoji:text]">{wordmark}</span>

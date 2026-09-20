@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cn } from "@/lib/cn";
 import type { Img, LinkItem } from "@/lib/types";
 import { BrandBlock } from "./BrandBlock";
 import { PageHeader } from "./PageHeader";
@@ -16,19 +17,19 @@ export type SplitHeroProps = {
 
 /**
  * Figma "Split Hero": Top Nav + Brand Block + Page Header on the left, photo on the right.
- * Desktop 720/720; tablet text fill + 340 photo; mobile stacked with a 390×300 photo.
+ * Desktop 720/720 and the full viewport height; tablet text fill + 340 photo; mobile stacked with a 390×300 photo.
  * Without `image` the left column runs full width (Events). Without `title` it is nav + brand only (password gate).
  */
 export function SplitHero({ active, wordmark, title, lede, links, image, titleId }: SplitHeroProps) {
   return (
-    <div className="flex w-full flex-col md:flex-row">
+    <div className={cn("flex w-full flex-col md:flex-row", image && "md:min-h-svh")}>
       <div className="flex min-w-0 flex-1 flex-col md:justify-between">
         <TopNav active={active} />
         <BrandBlock wordmark={wordmark} />
         {title && lede ? <PageHeader title={title} lede={lede} links={links} id={titleId} /> : null}
       </div>
       {image ? (
-        <div className="relative h-[300px] w-full shrink-0 bg-surface-muted md:h-auto md:w-[340px] md:min-h-[600px] xl:w-1/2">
+        <div className="relative h-[300px] w-full shrink-0 bg-surface-muted md:h-auto md:min-h-svh md:w-[340px] xl:w-1/2">
           <Image
             src={image.src}
             alt={image.alt}

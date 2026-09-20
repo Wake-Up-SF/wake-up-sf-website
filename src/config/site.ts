@@ -215,14 +215,6 @@ export const site = {
         ],
       },
       {
-        label: "Community",
-        links: [
-          { label: "Events", href: "/events" },
-          { label: "Facilitators", href: "/facilitators" },
-          { label: "Newsletter", href: links.googleGroup, external: true },
-        ],
-      },
-      {
         label: "Connect",
         links: [
           { label: "hello@wakeupsf.org", href: "mailto:hello@wakeupsf.org" },
