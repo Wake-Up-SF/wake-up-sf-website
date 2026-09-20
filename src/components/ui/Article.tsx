@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 /**
  * Sub Nav + 760px article column.
  * Mobile: sub-nav chip row above a full-width column. Tablet: 180 + fill, gap 64. Desktop: 220 + 760, gap 96.
+ * The sub-nav wrapper is the sticky element (top = nav height on mobile, 96px on md+); it must be `self-start` so it can travel the full row height.
  */
 export function Article({
   subnav,
@@ -16,7 +17,7 @@ export function Article({
 }) {
   return (
     <div className={cn("flex flex-col gap-32 md:flex-row md:items-start md:gap-64 xl:gap-96", className)}>
-      <div className="md:w-subnav-md md:shrink-0 xl:w-subnav">{subnav}</div>
+      <div className="sticky top-nav z-40 self-start bg-surface md:top-subnav-top md:w-subnav-md md:shrink-0 xl:w-subnav">{subnav}</div>
       <div className="flex min-w-0 flex-1 flex-col gap-28 xl:max-w-article">{children}</div>
     </div>
   );

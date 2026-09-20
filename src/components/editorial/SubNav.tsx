@@ -14,7 +14,7 @@ export type SubNavProps = {
 
 /**
  * Figma "Sub Nav": group label Heading 4, active item Heading 5 accent, other items Body 3 muted.
- * Desktop 220 / Tablet 180 column, sticky at 96px under the Top Nav. Mobile: wrapping chip row pinned under the nav.
+ * Desktop 220 / Tablet 180 column; Mobile: wrapping chip row. Stickiness lives on the wrapper in ui/Article.
  * Scroll-spy: for in-page "#id" items the active one follows the headings.
  */
 export function SubNav({ group, items, active, className }: SubNavProps) {
@@ -43,8 +43,8 @@ export function SubNav({ group, items, active, className }: SubNavProps) {
     <nav
       aria-label={group}
       className={cn(
-        "sticky top-nav z-40 flex flex-row flex-wrap items-baseline gap-x-20 gap-y-10 bg-surface py-12",
-        "md:top-subnav-top md:flex-col md:items-start md:gap-14 md:py-0",
+        "flex flex-row flex-wrap items-baseline gap-x-20 gap-y-10 bg-surface py-12",
+        "md:flex-col md:items-start md:gap-14 md:py-0",
         className,
       )}
     >
