@@ -115,7 +115,7 @@ One Figma component → one file under `src/components/editorial/`. Props are ty
 | `editorial/Figure.tsx` | Figure | `src`, `alt`, `caption`, `priority?` | no |
 | `editorial/PullQuote.tsx` | Pull Quote | `quote`, `attribution` | no |
 | `editorial/FooterB.tsx` | Footer B | `description`, `columns`, `bottomLinks` | no |
-| `editorial/PasswordGate.tsx` | Password Gate (gate card) | `error?: boolean`, `next?: string` | yes (`useActionState`) |
+| `editorial/PasswordGate.tsx` | Password Gate (gate card) | `action` (the area's server action), `copy: GateCopy`, `fallback: string`, `error?: boolean`, `next?: string` | yes (`useActionState`) |
 | `ui/Heading.tsx`, `ui/Text.tsx` | — (type scale) | see §2 | no |
 | `ui/Container.tsx` | — (gutters + 1296) | children | no |
 | `ui/Section.tsx` | — (vertical rhythm + optional top rule) | `rule?: boolean`, children | no |
@@ -136,16 +136,18 @@ src/
     layout.tsx  globals.css  page.tsx
     events/page.tsx
     facilitators/page.tsx  facilitators/enter/page.tsx  facilitators/enter/actions.ts
+    sangha/layout.tsx  sangha/page.tsx  sangha/enter/page.tsx  sangha/enter/actions.ts
+    sangha/series/page.tsx  sangha/library/page.tsx  sangha/writing/page.tsx  sangha/resources/page.tsx
     api/keepalive/route.ts
-  middleware.ts
+  proxy.ts
   components/
     ui/         Heading Text Container Section Article Input
     editorial/  TopNav MenuSheet ArrowLink Button SectionLabel InfoColumn SubNav
                 BrandBlock PageHeader SplitHero ListRow Figure PullQuote FooterB PasswordGate
   config/site.ts
   lib/
-    cn.ts  types.ts  validation.ts
-    data/  events.ts leaders.ts settings.ts fixtures.ts
+    cn.ts  types.ts  validation.ts  gate.ts (gate config, shared with proxy.ts)  gate-server.ts (cookie + redirect)
+    data/  events.ts leaders.ts settings.ts series.ts library.ts posts.ts fixtures.ts
     supabase/  server.ts
   styles/  tokens.css  tokens.ts (generated)
 scripts/gen-tokens.ts
@@ -180,6 +182,10 @@ Pages own layout and data-fetching; sections own presentation; components own th
 | Meeting time, place, directions, can't-find-us contact | `site_settings` row (fallback in `site.config.ts`) | Facilitators, in the Supabase dashboard |
 | Events | `events` table (published only) | Members submit, facilitators approve |
 | Leaders / Caretaking Council | `leaders` table | Facilitators |
+| Event series (hub) | `event_series` table, events joined by `events.series_id` | Facilitators |
+| Sangha library | `library_items` table (members-only: no public read policy) | Facilitators, from members' offers |
+| Member writing | `member_posts` table (members-only: no public read policy) | Facilitators, by hand — nothing is imported from Substack |
+| Hub resources & recommendations | `site.sangha.resources.groups` in `src/config/site.ts` | Anyone comfortable editing one file |
 | Nav, footer columns, wordmark, Who-we-are copy, quote, Get-involved copy, facilitator guidelines, Sunday-at-a-glance steps, document links | `src/config/site.ts` | Anyone comfortable editing one file |
 | Photos | `public/images/` | — |
 
@@ -231,6 +237,12 @@ export const site = {
 | `/events` | `TopNav` + `BrandBlock` + `PageHeader` "Events" (no photo; links Submit an event →, Past events →) → `Article` with `SubNav` "Events" (type filter, synced to `?type=`) + `Heading display` "Coming up", `Text lede`, `Figure`, then per month `SectionLabel` + `ListRow type="event"`, `ArrowLink` "See past events →" → `FooterB` | `getUpcomingEvents({ type })` grouped by month |
 | `/facilitators` (gated) | `SplitHero` "Facilitator hub" (links Open the sign-up sheet →, Read the facilitator guide →) → 2 × `InfoColumn` (Who's facilitating / New to facilitating?) → `Article` with `SubNav` "Facilitators" + `Heading display` "A Sunday at a glance", lede, `ListRow type="step"` ×6, `Heading 3` "Creating a container" + paragraph, `SectionLabel` "— Documents & links", `ListRow type="document"` ×6, support `PullQuote` with "Contact the CTC →" → `FooterB` | `site.facilitators` only |
 | `/facilitators/enter` | `SplitHero` (nav + brand only, no header, no photo) → `PageHeader` "Facilitator hub" beside `PasswordGate` card (Input, `Button filled` "Enter", `ArrowLink` "Not a facilitator yet? Here's how to start →", error line hidden unless `?error`) → `FooterB` | server action `enterFacilitators` |
+| `/sangha` (gated, member password) | `SplitHero` "Sangha Hub" → 2 × `InfoColumn` → `Article` with `SubNav` "Sangha Hub" (Overview · Series · Library · Writing · Resources) + `Heading display` "What's going on", lede, then three `SectionLabel` + `List` blocks (series as `type="event"`, shelf and writing as `type="document"`) each closed by an `ArrowLink`, and a clay-ruled block pointing at Resources → `FooterB` | `getSeries(3)`, `getLibrary(4)`, `getMemberPosts(3)` |
+| `/sangha/series` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Event series" → `Article` with the hub `SubNav`; per series a `SectionLabel` (status · dates · cadence), `Heading 3`, description, place, `ListRow type="event"` per session, optional `ArrowLink` "RSVP for the series →" → `FooterB` | `getSeries()` |
+| `/sangha/library` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Sangha library" → `Article` with the hub `SubNav`; per status a `SectionLabel` (On the shelf / Lent out / Wanted) + `ListRow type="document"` (kind = Book/Zine, description = author · note · owner, action = Ask *name* → / Ask to be next → / Offer yours →) → `FooterB` | `getLibraryByStatus()` |
+| `/sangha/writing` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Member writing" → `Article` with the hub `SubNav` + `ListRow type="document"` per post (kind = publication, description = author · month · excerpt, action "Read →", opens the post) → `FooterB` | `getMemberPosts()` |
+| `/sangha/resources` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Resources & recommendations" → `Article` with the hub `SubNav`; per group a `SectionLabel` + `ListRow type="document"` → `FooterB` | `site.sangha.resources` only |
+| `/sangha/enter` | As `/facilitators/enter`, with the member copy and the `enterSangha` action | server action `enterSangha` |
 
 Submitting an event is a link to Luma/Partiful plus the `/api/submit-event` route from `SETUP-supabase-vercel.md`; there is no separate submit page in Direction B. If one is added later, it is `PageHeader` + a form built from `Input` and `Button` inside an `Article`.
 
@@ -244,7 +256,13 @@ export async function getUpcomingEvents(opts: { limit?: number; type?: EventType
 export async function getEventsByMonth(type?: EventType): Promise<Array<{ month: string; events: PublicEvent[] }>>
 // src/lib/data/leaders.ts   getLeaders(limit?)
 // src/lib/data/settings.ts  getSettings()  — merges the site_settings row over site.config fallbacks
+// src/lib/data/series.ts    getSeries({ limit?, includeFinished? })  formatSeriesRange(startsAt, endsAt)
+// src/lib/data/library.ts   getLibrary({ limit? })  getLibraryByStatus()  describeLibraryItem(item)
+// src/lib/data/posts.ts     getMemberPosts({ limit? })  formatPostDate(iso)  describeMemberPost(post)
 ```
+
+`library_items` and `member_posts` carry members' names and contact links, so they get no public read
+policy: they are read server-side with the service-role client, and only ever rendered inside `/sangha`.
 
 Components receive mapped types, never raw rows. `fixtures.ts` provides the same shapes for building pages before Supabase exists.
 

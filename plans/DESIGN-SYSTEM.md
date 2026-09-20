@@ -258,14 +258,25 @@ All from Figma page **"🌿 Direction B · Components"**. One Figma component �
 | **Figure** | `Figure` | nested image + caption → `src`, `alt`, `caption` | — | Column-width photo, 10 gap, Body 3 `text-faint` caption. |
 | **Pull Quote** | `PullQuote` | `Quote` → `quote`; `Attribution` → `attribution` | — | 3px `accent` left rule, 28px left padding, Body 1 quote text, Body 3 attribution. |
 | **Footer B** | `FooterB` | columns from `site.config.ts` | Desktop / Tablet / Mobile | `surface-footer`. Logo + Body 3 description, three "— Label" columns (Section Label + Body 3 links), bottom row with 1px rule above. Tablet: 220 brand, tighter gaps. Mobile: stacked. |
-| **Password Gate** (screen) | `PasswordGate` page | — | Desktop / Tablet / Mobile; default + error states | Split Hero (nav + brand only) → Page Header beside a `surface-footer` gate card (Input, Filled Button, Arrow Link, error line hidden by default). Mobile stacks header above card. |
+| **Password Gate** (screen) | `PasswordGate` page | `action`, `copy: GateCopy`, `fallback`, `next?`, `error?` | Desktop / Tablet / Mobile; default + error states | Split Hero (nav + brand only) → Page Header beside a `surface-footer` gate card (Input, Filled Button, Arrow Link, error line hidden by default). Mobile stacks header above card. **Changed in code (Sangha Hub):** the card is no longer bound to the facilitator gate — the page passes the area's server action and its copy, so one card serves both `/facilitators/enter` and `/sangha/enter`. No visual change; nothing to mirror in Figma. |
 
 Component rules:
 
 - Components own no color decisions beyond the semantic aliases; pages only compose.
-- `ListRow` is the single list primitive. Events, people, documents, and schedule steps are all `ListRow` with a `type` prop.
+- `ListRow` is the single list primitive. Events, people, documents, and schedule steps are all `ListRow` with a `type` prop. The Sangha Hub adds no variant: series and their sessions are `type="event"`; books, member posts and resources are `type="document"` (the `kind` lead column carries "Book"/"Zine", the publication, or the resource kind).
 - No outer margins on components; parents use `gap`.
 - Direction A's `SiteHeader`, `SiteFooter`, cards, pills, and wave hero **do not exist** in the codebase.
+
+---
+
+### 6a. Gated areas
+
+Two members-only areas share one gate mechanism (`src/lib/gate.ts`, enforced in `src/proxy.ts`): the
+**Facilitator hub** (`/facilitators`, facilitator password) and the **Sangha Hub** (`/sangha`, member
+password). They are separate passwords and separate cookies — a member password never opens the
+facilitator hub. Hub pages compose the same components as the public pages; the only difference is the
+`SubNav` group ("Sangha Hub": Overview · Series · Library · Writing · Resources) and `robots: noindex`,
+set once in `src/app/sangha/layout.tsx`.
 
 ---
 

@@ -19,6 +19,11 @@ export const links = {
   plumVillage: "https://plumvillage.org",
   fiveTrainings: "https://plumvillage.org/mindfulness/the-5-mindfulness-trainings",
   instagram: "https://instagram.com",
+  pvApp: "https://plumvillage.app",
+  deerPark: "https://deerparkmonastery.org",
+  pvOnlineMonastery: "https://plumvillage.org/community/online-monastery",
+  pvLibrary: "https://plumvillage.org/library",
+  wakeUpInternational: "https://wkup.org/sanghas",
 } as const;
 
 export const site = {
@@ -30,6 +35,7 @@ export const site = {
   nav: [
     { label: "Home", href: "/" },
     { label: "Events", href: "/events" },
+    { label: "Sangha Hub", href: "/sangha" },
     { label: "Facilitators hub", href: "/facilitators" },
   ] satisfies LinkItem[],
 
@@ -100,6 +106,7 @@ export const site = {
         "Wake Up SF is peer-led. Nobody is a teacher; a small group of volunteer facilitators takes turns holding the space each Sunday, and a Caretaking Council keeps the sangha running between them.",
       rosterLabel: "Facilitators",
       links: [
+        { label: "Sangha Hub (password) →", href: "/sangha" },
         { label: "Facilitator hub (password) →", href: "/facilitators" },
       ] satisfies LinkItem[],
     },
@@ -175,7 +182,7 @@ export const site = {
       { kind: "Google Sheet", title: "Facilitation schedule", description: "Sign up to lead or co-facilitate a Sunday, and see who's on for the coming weeks.", href: links.sheet },
       { kind: "Word", title: "Facilitator Guide (Dec 2022)", description: "Approach, the Sunday schedule, holding space, dharma sharing guidelines.", href: links.guide },
       { kind: "PDF", title: "Charter (2020)", description: "Mission, roles (Caretaking Council, Board), elections and operating rhythm.", href: links.charter },
-      { kind: "Notion", title: "Sangha Hub", description: "Account access details and links to key tools and platforms.", href: links.sanghaHub },
+      { kind: "Notion", title: "Accounts & tools (Notion)", description: "Account access details and links to key tools and platforms.", href: links.sanghaHub },
       { kind: "Google Group", title: "Wake Up SF mailing list", description: "Where the Friday/Saturday reminder goes.", href: links.googleGroup },
       { kind: "WhatsApp", title: "Facilitators chat", description: "Day-of coordination, swapping Sundays, and where this page's password is shared.", href: links.whatsapp },
     ] satisfies DocumentLink[],
@@ -192,6 +199,135 @@ export const site = {
       submit: "Enter",
       help: { label: "Not a facilitator yet? Here's how to start →", href: "/#community" },
       error: "That password didn't match. Check the WhatsApp group for the current one.",
+      hint: "Enter the shared facilitator password.",
+    },
+  },
+
+  sangha: {
+    title: "Sangha Hub",
+    lede:
+      "The members' side of Wake Up SF: series we're running together, the book shelf we lend from, writing by people in the sangha, and the resources we keep recommending each other. Ask any facilitator for the password.",
+    hero: { src: "/images/photo-interbeing.jpg", alt: "Hands holding a small plant" },
+    links: [
+      { label: "What we're running →", href: "/sangha/series" },
+      { label: "Borrow a book →", href: "/sangha/library" },
+    ] satisfies LinkItem[],
+    infoColumns: [
+      {
+        title: "For members, not the public",
+        body: "Everything here is shared inside the sangha: contact details, book lending, half-finished writing. Please don't repost it. The password is the same for everyone and changes once a year.",
+        link: { label: "Questions? Email us →", href: "mailto:hello@wakeupsf.org" },
+      },
+      {
+        title: "Add something",
+        body: "Offering a book, running a series, or writing somewhere? Send it to the sangha email and a facilitator will add it here. Anything with a date also goes on the public events page.",
+        link: { label: "Send us your thing →", href: "mailto:hello@wakeupsf.org?subject=Sangha%20Hub" },
+      },
+    ] satisfies InfoColumnItem[],
+    subnav: {
+      group: "Sangha Hub",
+      items: [
+        { label: "Overview", href: "/sangha" },
+        { label: "Series", href: "/sangha/series" },
+        { label: "Library", href: "/sangha/library" },
+        { label: "Writing", href: "/sangha/writing" },
+        { label: "Resources", href: "/sangha/resources" },
+      ],
+    },
+    overview: {
+      title: "What's going on",
+      lede:
+        "The Sunday sit is the constant. Everything on this page is the extra that members are carrying between Sundays — a book club, a shelf of books doing the rounds, and whatever people are writing.",
+      seriesLabel: "Running and coming up",
+      seriesRowAction: "See the dates →",
+      seriesLink: { label: "All series →", href: "/sangha/series" },
+      libraryLabel: "Recently on the shelf",
+      libraryLink: { label: "The whole shelf →", href: "/sangha/library" },
+      writingLabel: "Latest from the sangha",
+      writingLink: { label: "All the writing →", href: "/sangha/writing" },
+      resources: {
+        title: "Things we keep recommending",
+        text: "The app, the talks, the monasteries within driving distance, and the two books that come up in dharma sharing most weeks.",
+        link: { label: "Resources & recommendations →", href: "/sangha/resources" },
+      },
+    },
+    series: {
+      title: "Event series",
+      lede:
+        "A series is a run of events that belong together — six Tuesdays with a book, a morning a month on each of the trainings. Drop into as many as you like; nothing assumes you came last time.",
+      links: [
+        { label: "Propose a series →", href: "mailto:hello@wakeupsf.org?subject=Series%20idea" },
+        { label: "One-off events →", href: "/events" },
+      ] satisfies LinkItem[],
+      empty: "No series running right now. The Sunday sit carries on as ever.",
+      seriesLinkLabel: "RSVP for the series →",
+      rsvpLabel: "RSVP →",
+    },
+    library: {
+      title: "Sangha library",
+      lede:
+        "Books members are happy to lend, and books members are hoping to borrow. Nothing is tracked automatically — message whoever has it, and tell a facilitator when it moves so the shelf stays honest.",
+      links: [
+        { label: "Offer a book →", href: "mailto:hello@wakeupsf.org?subject=Library%3A%20offering%20a%20book" },
+        { label: "Ask for a book →", href: "mailto:hello@wakeupsf.org?subject=Library%3A%20looking%20for%20a%20book" },
+      ] satisfies LinkItem[],
+      empty: "The shelf is empty. Offer the book you just finished.",
+      askLabel: "Ask",
+      waitlistLabel: "Ask to be next",
+      offerLabel: "Offer yours",
+    },
+    writing: {
+      title: "Member writing",
+      lede:
+        "Posts by people in the sangha, reshared with their permission. Mostly Substack, sometimes a blog nobody else reads. A facilitator adds each one by hand — nothing is pulled in automatically.",
+      links: [
+        { label: "Share what you wrote →", href: "mailto:hello@wakeupsf.org?subject=Member%20writing" },
+      ] satisfies LinkItem[],
+      empty: "Nothing here yet. Be the first to send something in.",
+      readLabel: "Read",
+    },
+    resources: {
+      title: "Resources & recommendations",
+      lede:
+        "What we point people to when they ask what to read, where to practise when they're away, and what to do with a difficult week. Suggest an addition and it goes on the list.",
+      links: [
+        { label: "Suggest a resource →", href: "mailto:hello@wakeupsf.org?subject=Resource%20suggestion" },
+      ] satisfies LinkItem[],
+      openLabel: "Open",
+      groups: [
+        {
+          label: "Start here",
+          items: [
+            { kind: "App", title: "Plum Village app", description: "Guided meditations, bells and short talks, free and with no account.", href: links.pvApp },
+            { kind: "Practice", title: "The Five Mindfulness Trainings", description: "The ethical ground of the tradition, and what we recite together a few times a year.", href: links.fiveTrainings },
+            { kind: "Community", title: "Wake Up sanghas worldwide", description: "Find a sangha when you travel, or when you move away from us.", href: links.wakeUpInternational },
+          ] satisfies DocumentLink[],
+        },
+        {
+          label: "Reading & listening",
+          items: [
+            { kind: "Library", title: "Plum Village dharma talks", description: "The full archive of talks by Thich Nhat Hanh and the monastics.", href: links.pvLibrary },
+            { kind: "Online", title: "The online monastery", description: "Live sits, days of mindfulness and retreats you can join from a laptop.", href: links.pvOnlineMonastery },
+          ] satisfies DocumentLink[],
+        },
+        {
+          label: "Places to practise",
+          items: [
+            { kind: "Monastery", title: "Deer Park Monastery", description: "Escondido, about eight hours south. We carpool down once or twice a year.", href: links.deerPark },
+            { kind: "Tradition", title: "Plum Village", description: "The root community in south-west France, and the source of most of what we do.", href: links.plumVillage },
+          ] satisfies DocumentLink[],
+        },
+      ],
+    },
+    gate: {
+      title: "Sangha Hub",
+      lede:
+        "The members' side of Wake Up SF: series, the book shelf, member writing and the resources we keep recommending. Ask any facilitator for the password — it's shared at the Sunday sit.",
+      passwordLabel: "Password",
+      submit: "Enter",
+      help: { label: "New here? Come to a Sunday sit →", href: "/#community" },
+      error: "That password didn't match. Ask a facilitator at the Sunday sit for the current one.",
+      hint: "Enter the shared member password.",
     },
   },
 

@@ -15,6 +15,10 @@ Everything below is free, and both services let you transfer ownership to anothe
 | Facilitators approve events | Supabase dashboard (table editor) → flip `status` to `published` |
 | Leadership directory | `leaders` table, edited in the dashboard |
 | Photos for events / leaders | Supabase Storage bucket `media` |
+| Members-only Sangha Hub | `/sangha`, behind a second shared password (§6c) |
+| Event series (book clubs, study groups) | `event_series` table; each event points at its series |
+| Book lending shelf | `library_items` table, read server-side only |
+| Member writing reshared from Substack | `member_posts` table, one row per post, added by hand |
 | Free, transferable, low upkeep | Both dashboards support ownership transfer; nothing to patch or babysit |
 
 Alternative considered: Firebase. It works, but Supabase is plain Postgres (easy to export and move), has a spreadsheet-like table editor facilitators can use without training, and row-level security is simpler to reason about for a small public site.
@@ -104,6 +108,58 @@ create table site_settings (
 );
 insert into site_settings (id) values (1);
 
+-- Sangha Hub (members-only, §6c) --------------------------------------------
+
+-- A run of events that belong together: a six-week book club, a monthly study morning.
+create type series_status as enum ('upcoming', 'running', 'finished');
+
+create table event_series (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  slug        text not null unique,
+  title       text not null,
+  description text not null,
+  cadence     text not null,          -- 'Six Tuesdays, 7–8:30pm'
+  place       text not null,
+  starts_at   timestamptz,
+  ends_at     timestamptz,
+  status      series_status not null default 'upcoming',
+  link_url    text                    -- optional RSVP page for the whole series
+);
+
+-- Each event may belong to one series; a session list is just the events with that series_id.
+alter table events add column series_id uuid references event_series (id) on delete set null;
+create index events_series_idx on events (series_id, starts_at);
+
+-- The lending shelf. `wanted` rows are members asking to borrow, not offering.
+create type library_status as enum ('available', 'lent', 'wanted');
+
+create table library_items (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  title        text not null,
+  author       text not null,
+  kind         text not null default 'Book',   -- Book, Zine, Audiobook
+  status       library_status not null default 'available',
+  note         text,
+  owner        text not null,                  -- first name only
+  contact_href text,                           -- mailto:/sms: — a member's own contact
+  is_active    boolean not null default true
+);
+
+-- Member writing, reshared with permission. A facilitator adds each row; nothing is imported.
+create table member_posts (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  title        text not null,
+  author       text not null,
+  publication  text not null default 'Substack',
+  published_at timestamptz,
+  excerpt      text not null default '',
+  url          text not null,
+  is_published boolean not null default true
+);
+
 -- Keep updated_at fresh
 create or replace function set_updated_at() returns trigger language plpgsql as $$
 begin new.updated_at = now(); return new; end $$;
@@ -132,6 +188,18 @@ create policy "public reads active leaders" on leaders
 create policy "public reads settings" on site_settings
   for select to anon, authenticated
   using (true);
+
+-- Sangha Hub tables. Series are harmless to expose (they are the same events, grouped);
+-- the library and member writing carry members' names and contact links, so they get
+-- NO policy at all: with RLS on and no policy, the anon key can read nothing. The site
+-- reads them server-side with the service-role key, inside the password-gated /sangha routes.
+alter table event_series  enable row level security;
+alter table library_items enable row level security;
+alter table member_posts  enable row level security;
+
+create policy "public reads series" on event_series
+  for select to anon, authenticated
+  using (status <> 'finished');
 
 -- Public submit: pending only, and only the three member fields may be set
 create policy "public submits pending events" on events
@@ -281,31 +349,47 @@ The Facilitators page is a simple hub: links to the sign-up Google Sheet, the fa
 ```
 FACILITATOR_PASSWORD=change-me        # add in Vercel → Settings → Environment Variables
 FACILITATOR_COOKIE_SECRET=long-random-string
+MEMBER_PASSWORD=change-me-too         # the Sangha Hub password, shared with the whole sangha (§6c)
+MEMBER_COOKIE_SECRET=another-long-random-string
 ```
 
+Both gated areas share one mechanism. `src/lib/gate.ts` declares them and `src/proxy.ts`
+(Next 16's middleware) enforces both:
+
 ```ts
-// src/middleware.ts
-import { NextResponse, type NextRequest } from 'next/server'
-export const config = { matcher: ['/facilitators/:path*'] }
-export function middleware(req: NextRequest) {
-  if (req.nextUrl.pathname === '/facilitators/enter') return NextResponse.next()
-  const ok = req.cookies.get('wusf_fac')?.value === process.env.FACILITATOR_COOKIE_SECRET
-  if (ok) return NextResponse.next()
-  const url = req.nextUrl.clone(); url.pathname = '/facilitators/enter'; url.searchParams.set('next', req.nextUrl.pathname)
+// src/lib/gate.ts
+export const gates = {
+  facilitators: { base: '/facilitators', enter: '/facilitators/enter', cookie: 'wusf_fac',
+                  passwordEnv: 'FACILITATOR_PASSWORD', secretEnv: 'FACILITATOR_COOKIE_SECRET' },
+  sangha:       { base: '/sangha',       enter: '/sangha/enter',       cookie: 'wusf_member',
+                  passwordEnv: 'MEMBER_PASSWORD',      secretEnv: 'MEMBER_COOKIE_SECRET' },
+}
+
+// src/proxy.ts
+export const config = { matcher: ['/facilitators/:path*', '/sangha/:path*'] }
+export function proxy(req: NextRequest) {
+  const gate = gateFor(req.nextUrl.pathname)          // which area, if any
+  if (!gate || req.nextUrl.pathname.startsWith(gate.enter)) return NextResponse.next()
+  if (req.cookies.get(gate.cookie)?.value === process.env[gate.secretEnv]) return NextResponse.next()
+  const url = req.nextUrl.clone(); url.pathname = gate.enter; url.search = ''
+  url.searchParams.set('next', req.nextUrl.pathname)
   return NextResponse.redirect(url)
 }
 ```
 
+The password form's server action is a two-line wrapper around the shared `enterGate` helper
+(`src/lib/gate-server.ts`), which checks the password, sets the area's cookie for 30 days and
+redirects. The `next` parameter is clamped to the area that was just unlocked, so a `next` pointing
+at another area or at an external host lands on the area's own index instead.
+
 ```ts
-// src/app/facilitators/enter/actions.ts  (server action used by the password form)
+// src/app/facilitators/enter/actions.ts
 'use server'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-export async function enter(formData: FormData) {
-  if (formData.get('password') !== process.env.FACILITATOR_PASSWORD) return { error: 'wrong' }
-  cookies().set('wusf_fac', process.env.FACILITATOR_COOKIE_SECRET!, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 60*60*24*30, path: '/' })
-  redirect((formData.get('next') as string) || '/facilitators')
+import { enterGate, type EnterState } from '@/lib/gate-server'
+export async function enterFacilitators(_prev: EnterState, formData: FormData) {
+  return enterGate('facilitators', formData)
 }
+// src/app/sangha/enter/actions.ts is the same with 'sangha'.
 ```
 
 Add `<meta name="robots" content="noindex">` on both pages. Documents live in `public/docs/` (copied from the repo-root `docs/`); they're technically reachable by URL if someone guesses the path, so keep the gate as a courtesy wall rather than a security boundary. If that matters, serve them through a route handler that checks the same cookie.
@@ -320,6 +404,42 @@ Add `<meta name="robots" content="noindex">` on both pages. Documents live in `p
 | WhatsApp group | https://chat.whatsapp.com/DcB40QkcgZOKmJXRdb3de1 |
 
 The Sangha Hub page mentions account ownership details. Link to it, but don't copy those into the site.
+
+---
+
+## 6c. Sangha Hub (members-only)
+
+`/sangha` is the members' side of the site, behind a **second, different password** from the
+facilitator hub. The facilitator password stays narrow (it opens the guide, the charter and the
+account details); the member password is shared with the whole sangha at the Sunday sit. Neither
+cookie opens the other area.
+
+| Route | What's on it | Data |
+|---|---|---|
+| `/sangha` | Overview: series running, recent books, latest writing, a pointer to resources | `event_series`, `library_items`, `member_posts` |
+| `/sangha/series` | Each series with its sessions and RSVP links | `event_series` + `events.series_id` |
+| `/sangha/library` | The lending shelf: on the shelf / lent out / wanted | `library_items` |
+| `/sangha/writing` | Member posts reshared from Substack and elsewhere | `member_posts` |
+| `/sangha/resources` | Curated recommendations, grouped | `src/config/site.ts` |
+
+Running it:
+
+- **A new series**: insert an `event_series` row, then set `series_id` on the events that belong to
+  it. Published events keep appearing on the public `/events` page as well — a series only groups them.
+- **A book**: insert a `library_items` row (title, author, `owner`, `contact_href`, `status`). When a
+  book changes hands, flip `status` between `available` and `lent`. A member hoping to borrow is a
+  row with `status = 'wanted'`.
+- **A post**: insert a `member_posts` row with the title, author, publication, link and a one-line
+  excerpt. Ask the author first — nothing is pulled from Substack automatically, by design.
+- **Resources** live in `site.sangha.resources.groups` in `src/config/site.ts`, so they are a pull
+  request rather than a database edit. Move them to a table if the list starts changing weekly.
+
+**Privacy.** `library_items` and `member_posts` contain members' names and contact links, so they
+have RLS enabled with **no read policy at all** (§3b): the anon key cannot read them from the
+browser. The site reads them server-side with the service-role key inside the gated routes. All hub
+pages are `robots: noindex, nofollow` (set once in `src/app/sangha/layout.tsx`). The password itself
+is still a courtesy wall, not a security boundary — don't put anything on the hub that would be
+harmful if a member forwarded the password.
 
 ---
 
@@ -359,6 +479,8 @@ Hobby-plan crons run once a day, which is enough. Real traffic to the site also 
 2. Share the sangha email + password-manager vault.
 3. Update the `leaders` table and `site_settings.cant_find_us_phone`.
 4. Remove the departing facilitator from both.
+4b. Rotate `FACILITATOR_PASSWORD` in Vercel and tell the WhatsApp group. Rotate `MEMBER_PASSWORD`
+   about once a year, or when someone leaves on bad terms, and announce the new one at the Sunday sit.
 5. Once a year: Supabase → Database → Backups → download, or run `pg_dump` with the connection string, and put the file in the shared Drive. Free tier keeps no daily backups, so this is the safety net.
 
 If you ever need to leave Supabase, the whole thing is standard Postgres plus a folder of images: `pg_dump` the schema and data, download the `media` bucket, and restore anywhere.
