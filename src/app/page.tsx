@@ -13,13 +13,13 @@ import { SplitHero } from "@/components/editorial/SplitHero";
 import { SubNav } from "@/components/editorial/SubNav";
 import { site } from "@/config/site";
 import { formatEventDate, formatEventTime, getUpcomingEvents } from "@/lib/data/events";
-import { getFacilitators, getLeaders } from "@/lib/data/leaders";
+import { getLeaders } from "@/lib/data/leaders";
 import { EVENT_TYPE_LABEL } from "@/lib/types";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [events, leaders, facilitators] = await Promise.all([getUpcomingEvents({ limit: 3 }), getLeaders(), getFacilitators()]);
+  const [events, leaders] = await Promise.all([getUpcomingEvents({ limit: 3 }), getLeaders()]);
   const { home } = site;
 
   return (
@@ -53,29 +53,13 @@ export default async function HomePage() {
             {home.community.title}
           </Heading>
           <Text size="lede">{home.community.lede}</Text>
-          <Text size={2} tone="muted">
-            {home.community.paragraph}
-          </Text>
           <div className="flex flex-col gap-12">
-            <SectionLabel label={home.community.councilLabel} />
+            <SectionLabel label={home.community.rosterLabel} />
             <List>
               {leaders.map((l) => (
                 <ListRow key={l.id} type="person" name={l.name} role={l.role} contact={l.contact} avatar={l.avatar} href={l.contactHref} />
               ))}
             </List>
-          </div>
-          <div className="flex flex-col gap-12">
-            <SectionLabel label={home.community.facilitatorsLabel} />
-            <Text size={2}>{facilitators.join(" · ")}</Text>
-            <Text size={3} tone="faint">
-              {home.community.facilitatorsNote}
-            </Text>
-          </div>
-          <div className="flex flex-col gap-10">
-            <Heading level={3}>{home.community.getInvolvedTitle}</Heading>
-            <Text size={2} tone="muted">
-              {home.community.getInvolved}
-            </Text>
           </div>
           <div className="flex flex-wrap gap-x-24 gap-y-8">
             {home.community.links.map((l) => (

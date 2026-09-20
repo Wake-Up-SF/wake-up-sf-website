@@ -98,14 +98,7 @@ export const site = {
       title: "Facilitators & community",
       lede:
         "Wake Up SF is peer-led. Nobody is a teacher; a small group of volunteer facilitators takes turns holding the space each Sunday, and a Caretaking Council keeps the sangha running between them.",
-      paragraph:
-        "Facilitators sign up about once a month to lead the sit, guide walking meditation and open dharma sharing. Anyone who has come to a few Sundays and taken a facilitator training (or checked in with someone who has facilitated three times) can join the rotation.",
-      councilLabel: "Caretaking Council",
-      facilitatorsLabel: "Facilitators",
-      facilitatorsNote: "The people who take turns holding the space on Sundays. The schedule lives in the sign-up sheet.",
-      getInvolvedTitle: "Get involved",
-      getInvolved:
-        "Come a few Sundays, then say hi to a facilitator. Ways to help: welcoming newcomers, bringing tea and cushions, guiding walking meditation, organizing a social or a retreat carpool. Everything we plan happens in the WhatsApp group.",
+      rosterLabel: "Facilitators",
       links: [
         { label: "Join the WhatsApp group →", href: links.whatsapp, external: true },
         { label: "Facilitator hub (password) →", href: "/facilitators" },

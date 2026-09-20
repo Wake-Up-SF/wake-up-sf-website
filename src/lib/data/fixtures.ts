@@ -16,13 +16,13 @@ export const fixtureEvents: PublicEvent[] = [
   { id: "7", title: "Wake Up West Coast retreat: Touching the Earth", description: "Three days of practice in the mountains.", type: "retreat", startsAt: at(11, 7, 17), linkUrl: "https://lu.ma/wakeupsf", location: "Vallecitos Mountain Retreat, NM" },
 ];
 
+/** Roster from the sign-up Google Sheet (2025–2026 rows). Shrey and Diego are also the Caretaking Council. Update from the sheet; it stays the source of truth. */
+const COUNCIL = "Caretaking Council · Facilitator";
+const FACILITATOR = "Facilitator";
 export const fixtureLeaders: Leader[] = [
-  { id: "1", name: "Shrey", role: "Caretaking Council" },
-  { id: "2", name: "Diego", role: "Caretaking Council" },
-];
-
-/** Facilitator roster, pulled from the sign-up Google Sheet (2025–2026 rows). Update from the sheet; it stays the source of truth. */
-export const fixtureFacilitators: string[] = [
-  "Diego", "Jerry", "Shrey", "Sophie", "Charisse", "Michelle", "Kyle", "Meri", "Shreyan", "Diva",
-  "Rachel", "Vivien", "Avery", "Christine", "Stuti", "Brian", "Evan",
+  { id: "shrey", name: "Shrey", role: COUNCIL },
+  { id: "diego", name: "Diego", role: COUNCIL },
+  ...["Jerry", "Sophie", "Charisse", "Michelle", "Kyle", "Meri", "Shreyan", "Diva", "Rachel", "Vivien", "Avery", "Christine", "Stuti", "Brian", "Evan"].map(
+    (name) => ({ id: name.toLowerCase(), name, role: FACILITATOR }),
+  ),
 ];
