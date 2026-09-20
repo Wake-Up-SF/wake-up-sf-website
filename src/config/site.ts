@@ -29,7 +29,6 @@ export const site = {
 
   nav: [
     { label: "Home", href: "/" },
-    { label: "About", href: "/#about" },
     { label: "Events", href: "/events" },
     { label: "Facilitators hub", href: "/facilitators" },
   ] satisfies LinkItem[],
