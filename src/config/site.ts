@@ -100,7 +100,6 @@ export const site = {
         "Wake Up SF is peer-led. Nobody is a teacher; a small group of volunteer facilitators takes turns holding the space each Sunday, and a Caretaking Council keeps the sangha running between them.",
       rosterLabel: "Facilitators",
       links: [
-        { label: "Join the WhatsApp group →", href: links.whatsapp, external: true },
         { label: "Facilitator hub (password) →", href: "/facilitators" },
       ] satisfies LinkItem[],
     },
