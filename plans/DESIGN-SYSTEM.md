@@ -296,7 +296,8 @@ Belt and braces: `font-variant-emoji: text` on the span, and the literal in `sit
 ## 8. Interaction notes (annotated in Figma Dev Mode)
 
 - **Top Nav**: `position: sticky; top: 0; z-index: 50`, `surface` background. A 1px `rule` bottom border fades in once the page has scrolled ≥ 1px. The menu icon opens a full-screen sheet listing all nav and footer links.
-- **Sub Nav**: `position: sticky; top: 96px` (just under the top nav) for the height of its section, then releases. Active item follows scroll (scroll-spy on the article headings); clicking smooth-scrolls to the heading. On mobile it becomes a horizontal chip row pinned under the top nav.
+  In code it is always a direct child of the page `<main>` — inside `SplitHero` it sits **above** the split row, not in the left column, because a sticky element can only travel inside its own parent (nested, it unpinned as soon as the hero scrolled past). Consequence on tablet/desktop: the hero row is `100svh − 57px`, so the hero photo starts below the nav bar rather than flush with the top of the viewport.
+- **Sub Nav**: `position: sticky; top: 96px` (just under the top nav) for the height of its section, then releases. Active item follows scroll (scroll-spy on the article headings); clicking smooth-scrolls to the heading. On mobile it becomes a horizontal chip row pinned under the top nav at `top: 57px` (the nav height): full content width, `surface` background and a 1px `rule` below it, so the article passes cleanly underneath. The sticky wrapper is `self-stretch` on mobile and `self-start` from `md` up.
 - **Arrow Link**: hover underlines the label and shifts the arrow 2px right (`motion-safe:transition`).
 - **List Row**: the whole row is the link when it has an action; hover tints the title `accent`.
 - **Button**: hover `accent-hover` (filled) / 1px `ink` at 60% (outline). Focus ring per `globals.css`.
