@@ -17,7 +17,12 @@ export const fixtureEvents: PublicEvent[] = [
 ];
 
 export const fixtureLeaders: Leader[] = [
-  { id: "1", name: "Charisse Yeh", role: "Group facilitator · the person to text if you can't find us", contact: "Text (415) 555-0100", contactHref: "sms:+14155550100" },
-  { id: "2", name: "Daniel Okafor", role: "Co-facilitator · walking meditation and newcomer welcome", contact: "daniel@wakeupsf.org", contactHref: "mailto:daniel@wakeupsf.org" },
-  { id: "3", name: "Mei Lin", role: "Retreat coordinator · Deer Park carpools and the yearly retreat", contact: "mei@wakeupsf.org", contactHref: "mailto:mei@wakeupsf.org" },
+  { id: "1", name: "Shrey", role: "Caretaking Council" },
+  { id: "2", name: "Diego", role: "Caretaking Council" },
+];
+
+/** Facilitator roster, pulled from the sign-up Google Sheet (2025–2026 rows). Update from the sheet; it stays the source of truth. */
+export const fixtureFacilitators: string[] = [
+  "Diego", "Jerry", "Shrey", "Sophie", "Charisse", "Michelle", "Kyle", "Meri", "Shreyan", "Diva",
+  "Rachel", "Vivien", "Avery", "Christine", "Stuti", "Brian", "Evan",
 ];

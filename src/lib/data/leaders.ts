@@ -2,7 +2,7 @@
 // TODO(supabase): replace fixtures with .from('leaders').select(...).eq('is_active', true).order('sort_order')
 // Row shape per plans/SETUP-supabase-vercel.md §3a.
 import type { Leader } from "@/lib/types";
-import { fixtureLeaders } from "./fixtures";
+import { fixtureFacilitators, fixtureLeaders } from "./fixtures";
 
 export type LeaderRow = {
   id: string;
@@ -31,4 +31,9 @@ export function mapLeader(row: LeaderRow): Leader {
 
 export async function getLeaders(limit?: number): Promise<Leader[]> {
   return limit ? fixtureLeaders.slice(0, limit) : fixtureLeaders;
+}
+
+/** Names of people who facilitate Sundays. Source of truth is the Google Sheet (site.links.sheet); this list is a snapshot. */
+export async function getFacilitators(): Promise<string[]> {
+  return fixtureFacilitators;
 }

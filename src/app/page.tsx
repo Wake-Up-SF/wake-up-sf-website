@@ -13,13 +13,13 @@ import { SplitHero } from "@/components/editorial/SplitHero";
 import { SubNav } from "@/components/editorial/SubNav";
 import { site } from "@/config/site";
 import { formatEventDate, formatEventTime, getUpcomingEvents } from "@/lib/data/events";
-import { getLeaders } from "@/lib/data/leaders";
+import { getFacilitators, getLeaders } from "@/lib/data/leaders";
 import { EVENT_TYPE_LABEL } from "@/lib/types";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [events, leaders] = await Promise.all([getUpcomingEvents({ limit: 3 }), getLeaders(3)]);
+  const [events, leaders, facilitators] = await Promise.all([getUpcomingEvents({ limit: 3 }), getLeaders(), getFacilitators()]);
   const { home } = site;
 
   return (
@@ -63,6 +63,13 @@ export default async function HomePage() {
                 <ListRow key={l.id} type="person" name={l.name} role={l.role} contact={l.contact} avatar={l.avatar} href={l.contactHref} />
               ))}
             </List>
+          </div>
+          <div className="flex flex-col gap-12">
+            <SectionLabel label={home.community.facilitatorsLabel} />
+            <Text size={2}>{facilitators.join(" · ")}</Text>
+            <Text size={3} tone="faint">
+              {home.community.facilitatorsNote}
+            </Text>
           </div>
           <div className="flex flex-col gap-10">
             <Heading level={3}>{home.community.getInvolvedTitle}</Heading>
