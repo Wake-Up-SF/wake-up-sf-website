@@ -98,6 +98,7 @@ export type LibraryItem = {
   note?: string;
   owner: string; // first name only
   contactHref?: string; // mailto: / sms:
+  cover?: Img; // uploaded to the media bucket, or resolved from the ISBN
 };
 
 /** A member's post, reshared from Substack or wherever they write. Curated by a facilitator. */

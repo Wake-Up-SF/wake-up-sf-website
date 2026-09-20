@@ -254,7 +254,7 @@ All from Figma page **"🌿 Direction B · Components"**. One Figma component �
 | **Brand Block** | `BrandBlock` | `Wordmark` → `wordmark` (default `san francisco ♥`) | Desktop / Tablet / Mobile | Logo 238×124 / 169×88 / 200×105 (stacked on mobile), padding 56/72 → 24/40 → 24/20. See §7 for the heart glyph. |
 | **Page Header** | `PageHeader` | `Title` → `title`; `Lede` → `lede`; `Show links`, `Show link 2` + two nested Arrow Links → `links?: {label, href}[]` (0–2) | Desktop / Tablet / Mobile | Display · Serif + Lede · Serif, sizes 48/24 → 44/22 → 36/20. |
 | **Split Hero** | `SplitHero` | composed: `nav`, `wordmark`, `title`, `lede`, `links`, `image?: {src, alt}` | Desktop / Tablet / Mobile | Left: Top Nav + Brand Block + Page Header. Right: photo 720 full-height / 340 / 390×300 stacked below. Without `image` it renders the left column at full width (Events). |
-| **List Row** | `ListRow` | `Type=Event\|Person\|Document\|Step` → `type`; `Breakpoint=Desktop\|Mobile`; props `Lead, Title, Meta, Action` (Event), `Name, Role, Contact` (Person), `Kind, Title, Description, Action` (Document), `Duration, Title, Description` (Step) | Desktop / Mobile | 1px `rule` above and below, 18–22 vertical padding, 32–40 gap. Lead column Body 2 `text-faint` 130–180px. Event title Heading 3; Person/Document/Step title Body 1; Action and Person Contact are Heading 4 `accent`. Person has a 44px `surface-muted` avatar. Mobile stacks lead → title → meta → action. |
+| **List Row** | `ListRow` | `Type=Event\|Person\|Document\|Step\|Book` → `type`; `Breakpoint=Desktop\|Mobile`; props `Lead, Title, Meta, Action` (Event), `Name, Role, Contact` (Person), `Kind, Title, Description, Action` (Document), `Duration, Title, Description` (Step), `Title, Meta, Cover, Action` (Book) | Desktop / Mobile | 1px `rule` above and below, 18–22 vertical padding, 32–40 gap. Lead column Body 2 `text-faint` 130–180px. Event title Heading 3; Person/Document/Step title Body 1; Action and Person Contact are Heading 4 `accent`. Person has a 44px `surface-muted` avatar. **Book** (added for the Sangha library, mirror in Figma) is Person's shape at book proportions: a 64×96 `surface-muted` spine holding the cover, Body 1 title, Body 3 `text-faint` meta, Heading 4 action. A cover that fails to load leaves the blank spine (`ui/CoverImage`), never a broken-image icon. Mobile stacks lead → title → meta → action. |
 | **Figure** | `Figure` | nested image + caption → `src`, `alt`, `caption` | — | Column-width photo, 10 gap, Body 3 `text-faint` caption. |
 | **Pull Quote** | `PullQuote` | `Quote` → `quote`; `Attribution` → `attribution` | — | 3px `accent` left rule, 28px left padding, Body 1 quote text, Body 3 attribution. |
 | **Footer B** | `FooterB` | columns from `site.config.ts` | Desktop / Tablet / Mobile | `surface-footer`. Logo + Body 3 description, three "— Label" columns (Section Label + Body 3 links), bottom row with 1px rule above. Tablet: 220 brand, tighter gaps. Mobile: stacked. |
@@ -263,7 +263,7 @@ All from Figma page **"🌿 Direction B · Components"**. One Figma component �
 Component rules:
 
 - Components own no color decisions beyond the semantic aliases; pages only compose.
-- `ListRow` is the single list primitive. Events, people, documents, and schedule steps are all `ListRow` with a `type` prop. The Sangha Hub adds no variant: series and their sessions are `type="event"`; books, member posts and resources are `type="document"` (the `kind` lead column carries "Book"/"Zine", the publication, or the resource kind).
+- `ListRow` is the single list primitive. Events, people, documents, schedule steps and books are all `ListRow` with a `type` prop. In the Sangha Hub, series and their sessions are `type="event"`; member posts and resources are `type="document"` (the `kind` lead column carries the publication or the resource kind); the library shelf is `type="book"`, the one variant the hub added — **mirror it in Figma**.
 - No outer margins on components; parents use `gap`.
 - Direction A's `SiteHeader`, `SiteFooter`, cards, pills, and wave hero **do not exist** in the codebase.
 
@@ -277,6 +277,10 @@ password). They are separate passwords and separate cookies — a member passwor
 facilitator hub. Hub pages compose the same components as the public pages; the only difference is the
 `SubNav` group ("Sangha Hub": Overview · Series · Library · Writing · Resources) and `robots: noindex`,
 set once in `src/app/sangha/layout.tsx`.
+
+Book covers come from `src/lib/data/covers.ts`: a file a facilitator uploaded to the Supabase `media`
+bucket if there is one, otherwise Open Library's cover for the ISBN (free, no key, allowed in
+`next.config.ts`). Covers are decoration — the shelf reads fine as blank spines.
 
 ---
 

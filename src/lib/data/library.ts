@@ -4,6 +4,7 @@
 //   .from('library_items').select(...).eq('is_active', true).order('created_at', { ascending: false })
 // Row shape per plans/SETUP-supabase-vercel.md §3a.
 import type { LibraryItem, LibraryStatus } from "@/lib/types";
+import { coverFrom } from "./covers";
 import { fixtureLibrary } from "./fixtures";
 
 export type LibraryRow = {
@@ -16,6 +17,8 @@ export type LibraryRow = {
   note: string | null;
   owner: string;
   contact_href: string | null;
+  cover_path: string | null; // path in the Supabase `media` bucket, or a local /images path
+  isbn: string | null; // 10 or 13 digits; used only to find a cover
   is_active: boolean;
 };
 
@@ -29,6 +32,7 @@ export function mapLibraryItem(row: LibraryRow): LibraryItem {
     note: row.note ?? undefined,
     owner: row.owner,
     contactHref: row.contact_href ?? undefined,
+    cover: coverFrom(row.cover_path, row.isbn, row.title),
   };
 }
 
@@ -49,9 +53,10 @@ export async function getLibraryByStatus(): Promise<Array<{ status: LibraryStatu
   );
 }
 
-/** The one-line description under a book title: author, note, and who has it. */
+/** The one-line description under a book title: format, author, note, and who has it. */
 export function describeLibraryItem(item: LibraryItem): string {
   const who = item.status === "wanted" ? `wanted by ${item.owner}` : `offered by ${item.owner}`;
   const note = item.note?.replace(/\.$/, ""); // the separator is the dot in this line
-  return [`by ${item.author}`, note, who].filter(Boolean).join(" · ");
+  const kind = item.kind === "Book" ? undefined : item.kind; // "Book" says nothing next to a cover
+  return [kind, `by ${item.author}`, note, who].filter(Boolean).join(" · ");
 }

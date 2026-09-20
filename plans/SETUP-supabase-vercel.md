@@ -144,6 +144,8 @@ create table library_items (
   note         text,
   owner        text not null,                  -- first name only
   contact_href text,                           -- mailto:/sms: — a member's own contact
+  cover_path   text,                           -- optional: a cover uploaded to the 'media' bucket
+  isbn         text,                           -- optional: 10 or 13 digits, used only to find a cover
   is_active    boolean not null default true
 );
 
@@ -429,6 +431,11 @@ Running it:
 - **A book**: insert a `library_items` row (title, author, `owner`, `contact_href`, `status`). When a
   book changes hands, flip `status` between `available` and `lent`. A member hoping to borrow is a
   row with `status = 'wanted'`.
+- **Its cover**: type the `isbn` and the cover comes from Open Library automatically
+  (`covers.openlibrary.org`, free and without a key — allowed in `next.config.ts`). For a zine, a
+  translation or anything Open Library doesn't have, upload a photo of the cover to `media/library/`
+  and put the path in `cover_path`; it wins over the ISBN. Neither is required — a book with no cover
+  shows a blank spine.
 - **A post**: insert a `member_posts` row with the title, author, publication, link and a one-line
   excerpt. Ask the author first — nothing is pulled from Substack automatically, by design.
 - **Resources** live in `site.sangha.resources.groups` in `src/config/site.ts`, so they are a pull

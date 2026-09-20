@@ -50,10 +50,10 @@ export default async function LibraryPage() {
                 {items.map((item) => (
                   <ListRow
                     key={item.id}
-                    type="document"
-                    kind={item.kind}
+                    type="book"
+                    cover={item.cover}
                     title={item.title}
-                    description={describeLibraryItem(item)}
+                    meta={describeLibraryItem(item)}
                     action={actionFor(item)}
                     href={item.contactHref}
                   />

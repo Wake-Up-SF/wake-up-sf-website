@@ -182,7 +182,7 @@ export const site = {
       { kind: "Google Sheet", title: "Facilitation schedule", description: "Sign up to lead or co-facilitate a Sunday, and see who's on for the coming weeks.", href: links.sheet },
       { kind: "Word", title: "Facilitator Guide (Dec 2022)", description: "Approach, the Sunday schedule, holding space, dharma sharing guidelines.", href: links.guide },
       { kind: "PDF", title: "Charter (2020)", description: "Mission, roles (Caretaking Council, Board), elections and operating rhythm.", href: links.charter },
-      { kind: "Notion", title: "Accounts & tools (Notion)", description: "Account access details and links to key tools and platforms.", href: links.sanghaHub },
+      { kind: "Notion", title: "Sangha Hub", description: "Account access details and links to key tools and platforms.", href: links.sanghaHub },
       { kind: "Google Group", title: "Wake Up SF mailing list", description: "Where the Friday/Saturday reminder goes.", href: links.googleGroup },
       { kind: "WhatsApp", title: "Facilitators chat", description: "Day-of coordination, swapping Sundays, and where this page's password is shared.", href: links.whatsapp },
     ] satisfies DocumentLink[],

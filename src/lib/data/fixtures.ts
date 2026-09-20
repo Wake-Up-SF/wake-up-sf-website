@@ -1,6 +1,7 @@
 // Static sample data used until Supabase is wired (PLAN-components.md §5.3).
 // Names, phone and email other than Charisse Yeh are placeholders.
 import type { LibraryItem, MemberPost, PublicEvent, PublicSeries, Leader } from "@/lib/types";
+import { openLibraryCover } from "./covers";
 
 const year = new Date().getFullYear();
 // PDT (UTC-7) March–October, PST (UTC-8) November–February. Good enough for fixtures.
@@ -69,11 +70,11 @@ export const fixtureSeries: PublicSeries[] = [
 
 /** The lending shelf. Owners are first names; contact goes through the sangha email until members opt in. */
 export const fixtureLibrary: LibraryItem[] = [
-  { id: "lib-1", title: "The Heart of the Buddha's Teaching", author: "Thich Nhat Hanh", kind: "Book", status: "available", note: "The book club copy — annotated in pencil, sorry.", owner: "Charisse", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20The%20Heart%20of%20the%20Buddha%27s%20Teaching" },
-  { id: "lib-2", title: "Old Path White Clouds", author: "Thich Nhat Hanh", kind: "Book", status: "lent", note: "Back at the end of the month.", owner: "Shrey", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20Old%20Path%20White%20Clouds" },
-  { id: "lib-3", title: "No Mud, No Lotus", author: "Thich Nhat Hanh", kind: "Book", status: "available", owner: "Diego", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20No%20Mud%2C%20No%20Lotus" },
+  { id: "lib-1", cover: openLibraryCover("9780767903691", "The Heart of the Buddha's Teaching"), title: "The Heart of the Buddha's Teaching", author: "Thich Nhat Hanh", kind: "Book", status: "available", note: "The book club copy — annotated in pencil, sorry.", owner: "Charisse", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20The%20Heart%20of%20the%20Buddha%27s%20Teaching" },
+  { id: "lib-2", cover: openLibraryCover("9780938077268", "Old Path White Clouds"), title: "Old Path White Clouds", author: "Thich Nhat Hanh", kind: "Book", status: "lent", note: "Back at the end of the month.", owner: "Shrey", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20Old%20Path%20White%20Clouds" },
+  { id: "lib-3", cover: openLibraryCover("9780062780171", "No Mud, No Lotus"), title: "No Mud, No Lotus", author: "Thich Nhat Hanh", kind: "Book", status: "available", owner: "Diego", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20No%20Mud%2C%20No%20Lotus" },
   { id: "lib-4", title: "Being Peace", author: "Thich Nhat Hanh", kind: "Zine", status: "available", note: "A photocopied study booklet from the 2022 retreat.", owner: "Michelle", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20Being%20Peace" },
-  { id: "lib-5", title: "Awakening of the Heart", author: "Thich Nhat Hanh", kind: "Book", status: "wanted", note: "Happy to borrow for a few weeks, or buy a used copy off someone.", owner: "Kyle", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20Awakening%20of%20the%20Heart" },
+  { id: "lib-5", cover: openLibraryCover("9781888375909", "Awakening of the Heart"), title: "Awakening of the Heart", author: "Thich Nhat Hanh", kind: "Book", status: "wanted", note: "Happy to borrow for a few weeks, or buy a used copy off someone.", owner: "Kyle", contactHref: "mailto:hello@wakeupsf.org?subject=Library%3A%20Awakening%20of%20the%20Heart" },
 ];
 
 /** Member writing, reshared with permission. A facilitator adds each row. */

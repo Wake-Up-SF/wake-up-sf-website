@@ -111,7 +111,7 @@ One Figma component → one file under `src/components/editorial/`. Props are ty
 | `editorial/BrandBlock.tsx` | Brand Block | `wordmark?` (default `'san francisco \u2665\uFE0E'`) | no |
 | `editorial/PageHeader.tsx` | Page Header | `title`, `lede`, `links?: LinkItem[]` (0–2) | no |
 | `editorial/SplitHero.tsx` | Split Hero | `nav`, `active`, `title`, `lede`, `links?`, `image?: Img` | no |
-| `editorial/ListRow.tsx` | List Row | `type: 'event' \| 'person' \| 'document' \| 'step'` + per-type fields (`lead/title/meta/action`, `name/role/contact/avatar?`, `kind/title/description/action`, `duration/title/description`) | no |
+| `editorial/ListRow.tsx` | List Row | `type: 'event' \| 'person' \| 'document' \| 'step' \| 'book'` + per-type fields (`lead/title/meta/action`, `name/role/contact/avatar?`, `kind/title/description/action`, `duration/title/description`, `title/meta/cover?/action`) | no |
 | `editorial/Figure.tsx` | Figure | `src`, `alt`, `caption`, `priority?` | no |
 | `editorial/PullQuote.tsx` | Pull Quote | `quote`, `attribution` | no |
 | `editorial/FooterB.tsx` | Footer B | `description`, `columns`, `bottomLinks` | no |
@@ -121,6 +121,7 @@ One Figma component → one file under `src/components/editorial/`. Props are ty
 | `ui/Section.tsx` | — (vertical rhythm + optional top rule) | `rule?: boolean`, children | no |
 | `ui/Article.tsx` | — (Sub Nav + 760 column layout) | `subnav`, children | no |
 | `ui/Input.tsx` | Input Field (legacy) | label, placeholder, error | no |
+| `ui/CoverImage.tsx` | — (book cover inside a List Row spine) | `cover?: Img`, `sizes` | yes (drops a cover that fails to load) |
 
 Shared types (`src/lib/types.ts`): `LinkItem {label, href}`, `NavItem = LinkItem`, `Img {src, alt}`, `PublicEvent`, `Leader`, `Settings`, `DocumentLink {kind, title, description, href}`, `ScheduleStep {duration, title, description}`.
 
@@ -141,13 +142,13 @@ src/
     api/keepalive/route.ts
   proxy.ts
   components/
-    ui/         Heading Text Container Section Article Input
+    ui/         Heading Text Container Section Article Input CoverImage
     editorial/  TopNav MenuSheet ArrowLink Button SectionLabel InfoColumn SubNav
                 BrandBlock PageHeader SplitHero ListRow Figure PullQuote FooterB PasswordGate
   config/site.ts
   lib/
     cn.ts  types.ts  validation.ts  gate.ts (gate config, shared with proxy.ts)  gate-server.ts (cookie + redirect)
-    data/  events.ts leaders.ts settings.ts series.ts library.ts posts.ts fixtures.ts
+    data/  events.ts leaders.ts settings.ts series.ts library.ts posts.ts covers.ts fixtures.ts
     supabase/  server.ts
   styles/  tokens.css  tokens.ts (generated)
 scripts/gen-tokens.ts
@@ -164,7 +165,7 @@ Rules:
 2. No outer margins on components; parents use `gap`.
 3. No page-specific classNames inside components; a difference is a new prop or a layout-only `className` passthrough.
 4. Every component exports its `cva` definition.
-5. Server by default. Client components: `TopNav`, `MenuSheet`, `SubNav`, `PasswordGate`.
+5. Server by default. Client components: `TopNav`, `MenuSheet`, `SubNav`, `PasswordGate`, `CoverImage`.
 6. Copy lives in `site.config.ts` or the database, never as literals in components.
 7. Text only via the nine utilities; no weight, italic, case or tracking overrides. Links and actions are `text-h4 text-accent`.
 8. Lint enforces 1, 2, 7 (rules in `DESIGN-SYSTEM.md` §10).
@@ -239,7 +240,7 @@ export const site = {
 | `/facilitators/enter` | `SplitHero` (nav + brand only, no header, no photo) → `PageHeader` "Facilitator hub" beside `PasswordGate` card (Input, `Button filled` "Enter", `ArrowLink` "Not a facilitator yet? Here's how to start →", error line hidden unless `?error`) → `FooterB` | server action `enterFacilitators` |
 | `/sangha` (gated, member password) | `SplitHero` "Sangha Hub" → 2 × `InfoColumn` → `Article` with `SubNav` "Sangha Hub" (Overview · Series · Library · Writing · Resources) + `Heading display` "What's going on", lede, then three `SectionLabel` + `List` blocks (series as `type="event"`, shelf and writing as `type="document"`) each closed by an `ArrowLink`, and a clay-ruled block pointing at Resources → `FooterB` | `getSeries(3)`, `getLibrary(4)`, `getMemberPosts(3)` |
 | `/sangha/series` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Event series" → `Article` with the hub `SubNav`; per series a `SectionLabel` (status · dates · cadence), `Heading 3`, description, place, `ListRow type="event"` per session, optional `ArrowLink` "RSVP for the series →" → `FooterB` | `getSeries()` |
-| `/sangha/library` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Sangha library" → `Article` with the hub `SubNav`; per status a `SectionLabel` (On the shelf / Lent out / Wanted) + `ListRow type="document"` (kind = Book/Zine, description = author · note · owner, action = Ask *name* → / Ask to be next → / Offer yours →) → `FooterB` | `getLibraryByStatus()` |
+| `/sangha/library` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Sangha library" → `Article` with the hub `SubNav`; per status a `SectionLabel` (On the shelf / Lent out / Wanted) + `ListRow type="book"` (64×96 cover, meta = format · author · note · owner, action = Ask *name* → / Ask to be next → / Offer yours →) → `FooterB` | `getLibraryByStatus()` |
 | `/sangha/writing` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Member writing" → `Article` with the hub `SubNav` + `ListRow type="document"` per post (kind = publication, description = author · month · excerpt, action "Read →", opens the post) → `FooterB` | `getMemberPosts()` |
 | `/sangha/resources` (gated) | `TopNav` + `BrandBlock` + `PageHeader` "Resources & recommendations" → `Article` with the hub `SubNav`; per group a `SectionLabel` + `ListRow type="document"` → `FooterB` | `site.sangha.resources` only |
 | `/sangha/enter` | As `/facilitators/enter`, with the member copy and the `enterSangha` action | server action `enterSangha` |
@@ -259,6 +260,7 @@ export async function getEventsByMonth(type?: EventType): Promise<Array<{ month:
 // src/lib/data/series.ts    getSeries({ limit?, includeFinished? })  formatSeriesRange(startsAt, endsAt)
 // src/lib/data/library.ts   getLibrary({ limit? })  getLibraryByStatus()  describeLibraryItem(item)
 // src/lib/data/posts.ts     getMemberPosts({ limit? })  formatPostDate(iso)  describeMemberPost(post)
+// src/lib/data/covers.ts    coverFrom(coverPath, isbn, title)  openLibraryCover(isbn, title)
 ```
 
 `library_items` and `member_posts` carry members' names and contact links, so they get no public read

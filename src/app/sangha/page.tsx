@@ -71,10 +71,10 @@ export default async function SanghaPage() {
                 {library.map((item) => (
                   <ListRow
                     key={item.id}
-                    type="document"
-                    kind={LIBRARY_STATUS_LABEL[item.status]}
+                    type="book"
+                    cover={item.cover}
                     title={item.title}
-                    description={describeLibraryItem(item)}
+                    meta={`${LIBRARY_STATUS_LABEL[item.status]} · ${describeLibraryItem(item)}`}
                     action={item.contactHref ? `${s.library.askLabel} ${item.owner} →` : undefined}
                     href={item.contactHref}
                   />
