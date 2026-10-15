@@ -2,7 +2,8 @@
 // TODO(supabase): replace fixtures with a query against `events` (status = 'published').
 // Row shape per plans/SETUP-supabase-vercel.md §3a:
 //   id uuid, status event_status, title text, description text, link_url text,
-//   type event_type, starts_at timestamptz | null, cover_image_path text | null
+//   type event_type, starts_at timestamptz | null, cover_image_path text | null,
+//   series_id uuid | null references event_series(id)
 import type { EventType, PublicEvent } from "@/lib/types";
 import { fixtureEvents } from "./fixtures";
 
@@ -15,6 +16,7 @@ export type EventRow = {
   type: EventType;
   starts_at: string | null;
   cover_image_path: string | null;
+  series_id: string | null;
 };
 
 export function mapEvent(row: EventRow): PublicEvent {
@@ -25,6 +27,7 @@ export function mapEvent(row: EventRow): PublicEvent {
     type: row.type,
     startsAt: row.starts_at,
     linkUrl: row.link_url,
+    seriesId: row.series_id ?? undefined,
   };
 }
 

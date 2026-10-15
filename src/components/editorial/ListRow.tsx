@@ -1,17 +1,18 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { cva } from "class-variance-authority";
+import { CoverImage } from "@/components/ui/CoverImage";
 import { Heading } from "@/components/ui/Heading";
 import { Text } from "@/components/ui/Text";
 import { cn } from "@/lib/cn";
 import type { Img } from "@/lib/types";
 
-/** Figma "List Row" — the single list primitive. Types mirror `Type=Event|Person|Document|Step`. */
+/** Figma "List Row" — the single list primitive. Types mirror `Type=Event|Person|Document|Step|Book`. */
 export const listRow = cva(
   "group flex flex-col gap-6 border-b border-rule py-14 md:flex-row md:items-start md:gap-32 md:py-20",
   {
     variants: {
-      type: { event: "", person: "md:items-center", document: "", step: "" },
+      type: { event: "", person: "md:items-center", document: "", step: "", book: "" },
     },
     defaultVariants: { type: "event" },
   },
@@ -24,6 +25,7 @@ export type ListRowProps = Common &
     | { type: "person"; name: string; role: string; contact?: string; avatar?: Img }
     | { type: "document"; kind: string; title: string; description?: string; action?: string }
     | { type: "step"; duration: string; title: string; description?: string }
+    | { type: "book"; title: string; meta?: string; cover?: Img; action?: string }
   );
 
 const leadClass = "shrink-0 md:w-[130px] xl:w-[180px]";
@@ -88,6 +90,27 @@ export function ListRow(props: ListRowProps) {
           {props.description ? (
             <Text as="span" size={3} tone="faint">
               {props.description}
+            </Text>
+          ) : null}
+        </>
+      );
+      action = props.action ? <span className={actionClass}>{props.action}</span> : null;
+      break;
+    case "book":
+      // A 2:3 cover in the lead column, like Person's avatar. Missing covers keep the space as a blank spine.
+      lead = (
+        <span className="relative h-96 w-64 shrink-0 overflow-hidden bg-surface-muted">
+          <CoverImage cover={props.cover} sizes="64px" />
+        </span>
+      );
+      body = (
+        <>
+          <Text as="span" size={1} className="group-hover:text-accent">
+            {props.title}
+          </Text>
+          {props.meta ? (
+            <Text as="span" size={3} tone="faint">
+              {props.meta}
             </Text>
           ) : null}
         </>

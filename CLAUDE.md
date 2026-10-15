@@ -14,8 +14,8 @@ Figma: https://www.figma.com/design/VQ4hadDgL9lSzsdiX0Mk0B — build only from p
 3. **Components, not one-offs.** Everything on a page is composed from the Direction B component set (Top Nav, Brand Block, Page Header, Split Hero, Sub Nav, Info Column, List Row, Figure, Pull Quote, Arrow Link, Button, Section Label, Footer B, Password Gate). Components with a `Breakpoint` variant in Figma get responsive classes, not separate components.
 4. **Wordmark:** `san francisco ♥` renders the heart as the text glyph U+2665 + U+FE0E, never the color emoji.
 5. **White surfaces, one accent, 1px rules.** No tinted bands, no cards with fills/radii, no scrims, no wave.
-6. **Content stays editable in one place:** static copy, nav, footer links, meeting info in `src/config/site.ts`; events/leaders from Supabase; the facilitator schedule is a link to the Google Sheet, never imported.
-7. **Facilitators area** is behind the shared-password middleware; the sub-pages are `noindex`.
+6. **Content stays editable in one place:** static copy, nav, footer links, meeting info, hub resources in `src/config/site.ts`; events/leaders/series/library/member posts from Supabase; the facilitator schedule is a link to the Google Sheet, never imported, and member writing is added by hand — never pulled from Substack.
+7. **Two gated areas**, one mechanism (`src/lib/gate.ts` + `src/proxy.ts`): `/facilitators` (facilitator password) and `/sangha`, the members' Sangha Hub (member password — series, library, member writing, resources). Separate passwords, separate cookies; both `noindex`. Library and member-post rows hold members' contact details: no public RLS read policy, read server-side only.
 8. Keep Figma and code in sync: if a component changes in code, note it in `plans/DESIGN-SYSTEM.md` and mirror it in the Figma component; don't add Figma text styles or variables without asking.
 
 ## Working in Figma (use_figma)
@@ -24,3 +24,13 @@ Figma: https://www.figma.com/design/VQ4hadDgL9lSzsdiX0Mk0B — build only from p
 
 ## Placeholders to replace before launch
 Facilitator names other than Charisse Yeh, the phone (415) 555-0100, hello@wakeupsf.org, Plum Village photos in `assets/` (`photo-pv-*`), the facilitator password, Luma/Partiful links.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
