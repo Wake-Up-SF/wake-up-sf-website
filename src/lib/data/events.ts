@@ -1,11 +1,14 @@
 // src/lib/data/events.ts — the only place that knows event table/column names.
-// TODO(supabase): replace fixtures with a query against `events` (status = 'published').
+// Reads with the anon key; RLS only lets published events through. Never select `review_note`.
 // Row shape per plans/SETUP-supabase-vercel.md §3a:
 //   id uuid, status event_status, title text, description text, link_url text,
 //   type event_type, starts_at timestamptz | null, cover_image_path text | null,
 //   series_id uuid | null references event_series(id)
 import type { EventType, PublicEvent } from "@/lib/types";
+import { publicDb, rows } from "@/lib/supabase/server";
 import { fixtureEvents } from "./fixtures";
+
+export const EVENT_COLUMNS = "id,status,title,description,link_url,type,starts_at,cover_image_path,series_id";
 
 export type EventRow = {
   id: string;
@@ -34,7 +37,21 @@ export function mapEvent(row: EventRow): PublicEvent {
 export async function getUpcomingEvents(
   opts: { limit?: number; type?: EventType } = {},
 ): Promise<PublicEvent[]> {
-  // TODO(supabase): .from('events').select(...).eq('status','published').gte('starts_at', now).order('starts_at')
+  // Events from yesterday on stay listed for a day, and undated ones ("TBC") come first.
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  const db = publicDb();
+  if (db) {
+    let q = db
+      .from("events")
+      .select(EVENT_COLUMNS)
+      .eq("status", "published")
+      .or(`starts_at.is.null,starts_at.gte.${since}`)
+      .order("starts_at", { nullsFirst: true });
+    if (opts.type) q = q.eq("type", opts.type);
+    if (opts.limit) q = q.limit(opts.limit);
+    return rows(await q, "events").map((r) => mapEvent(r as EventRow));
+  }
+
   const now = Date.now();
   let list = fixtureEvents.filter((e) => !e.startsAt || Date.parse(e.startsAt) >= now - 86_400_000);
   if (opts.type) list = list.filter((e) => e.type === opts.type);

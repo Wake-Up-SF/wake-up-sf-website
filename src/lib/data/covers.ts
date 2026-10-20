@@ -2,6 +2,7 @@
 // Open Library serves a cover for most ISBNs, free and without a key, so a facilitator only has to
 // type the ISBN. An uploaded file in the Supabase `media` bucket always wins over it.
 // The host is allowed in next.config.ts; a missing cover renders as a blank spine, never a broken image.
+import { mediaUrl } from "@/lib/supabase/media";
 import type { Img } from "@/lib/types";
 
 export function openLibraryCover(isbn: string, title: string): Img | undefined {
@@ -10,6 +11,6 @@ export function openLibraryCover(isbn: string, title: string): Img | undefined {
 }
 
 export function coverFrom(coverPath: string | null, isbn: string | null, title: string): Img | undefined {
-  if (coverPath) return { src: coverPath, alt: `Cover of ${title}` };
+  if (coverPath) return { src: mediaUrl(coverPath), alt: `Cover of ${title}` };
   return isbn ? openLibraryCover(isbn, title) : undefined;
 }
