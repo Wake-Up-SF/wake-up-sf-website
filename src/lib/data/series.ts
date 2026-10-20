@@ -1,7 +1,9 @@
 // src/lib/data/series.ts — the only place that knows the `event_series` table.
-// TODO(supabase): .from('event_series').select('*, events(*)').neq('status','finished').order('starts_at')
+// Reads with the anon key: RLS hides finished series, and only published events come through the embed.
 // Row shape per plans/SETUP-supabase-vercel.md §3a.
 import type { PublicSeries, SeriesStatus } from "@/lib/types";
+import { publicDb, rows } from "@/lib/supabase/server";
+import { EVENT_COLUMNS, mapEvent, type EventRow } from "./events";
 import { fixtureSeries } from "./fixtures";
 
 export type SeriesRow = {
@@ -34,6 +36,22 @@ export function mapSeries(row: SeriesRow): Omit<PublicSeries, "events"> {
 
 /** Running and upcoming series, each with its events in date order. */
 export async function getSeries(opts: { limit?: number; includeFinished?: boolean } = {}): Promise<PublicSeries[]> {
+  const db = publicDb();
+  if (db) {
+    let q = db
+      .from("event_series")
+      .select(`*, events(${EVENT_COLUMNS})`)
+      .eq("events.status", "published")
+      .order("starts_at", { nullsFirst: true })
+      .order("starts_at", { referencedTable: "events", nullsFirst: false });
+    if (!opts.includeFinished) q = q.neq("status", "finished");
+    if (opts.limit) q = q.limit(opts.limit);
+    return rows(await q, "event_series").map((r) => {
+      const { events, ...series } = r as SeriesRow & { events: EventRow[] };
+      return { ...mapSeries(series), events: events.map(mapEvent) };
+    });
+  }
+
   let list = fixtureSeries;
   if (!opts.includeFinished) list = list.filter((s) => s.status !== "finished");
   list = [...list].sort((a, b) => (a.startsAt ?? "").localeCompare(b.startsAt ?? ""));

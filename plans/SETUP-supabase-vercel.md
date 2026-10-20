@@ -46,7 +46,9 @@ Create both accounts with a **shared sangha email** (for example `hello@wakeupsf
 
 ### 3a. Schema
 
-Open **SQL Editor → New query**, paste, and run:
+**Live project:** `ulszyscwbkifslegloop` (org "WakeUp SF", East US — next to Vercel's default `iad1` function region). §3a–3d are applied there as `supabase/migrations/20261020000000_init.sql`; change the SQL here and in a new migration together, and apply it with `supabase db push`.
+
+For a fresh project, open **SQL Editor → New query**, paste, and run:
 
 ```sql
 -- Extensions
@@ -277,6 +279,8 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...        # only if a server route needs to bypass
 NOTIFY_EMAIL=hello@wakeupsf.org         # where new-submission emails go
 RESEND_API_KEY=re_...                   # optional, see §6
 ```
+
+The site's clients live in `src/lib/supabase/server.ts`: `publicDb()` (anon key, for events, leaders, settings and series) and `privateDb()` (service-role key, only for `library_items` and `member_posts` on the gated `/sangha` pages). Without the env vars, development falls back to `src/lib/data/fixtures.ts`; a production build fails. Media paths go through `mediaUrl()` in `src/lib/supabase/media.ts`.
 
 Reading data (server component example):
 

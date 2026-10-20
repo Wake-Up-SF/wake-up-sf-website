@@ -1,4 +1,4 @@
-// Static sample data used until Supabase is wired (PLAN-components.md §5.3).
+// Static sample data, used in development when the Supabase env vars are not set (src/lib/supabase/server.ts).
 // Names, phone and email other than Charisse Yeh are placeholders.
 import type { LibraryItem, MemberPost, PublicEvent, PublicSeries, Leader } from "@/lib/types";
 import { openLibraryCover } from "./covers";

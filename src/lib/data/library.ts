@@ -1,10 +1,10 @@
 // src/lib/data/library.ts — the only place that knows the `library_items` table.
 // Member contact details live in these rows, so unlike events this table has no public read policy:
-// TODO(supabase): read it server-side with the service-role client, never the anon key
-//   .from('library_items').select(...).eq('is_active', true).order('created_at', { ascending: false })
+// so it is read server-side with the service-role client — only from the gated /sangha pages.
 // Row shape per plans/SETUP-supabase-vercel.md §3a.
 import type { LibraryItem, LibraryStatus } from "@/lib/types";
 import { coverFrom } from "./covers";
+import { privateDb, rows } from "@/lib/supabase/server";
 import { fixtureLibrary } from "./fixtures";
 
 export type LibraryRow = {
@@ -39,7 +39,13 @@ export function mapLibraryItem(row: LibraryRow): LibraryItem {
 const STATUS_ORDER: LibraryStatus[] = ["available", "lent", "wanted"];
 
 export async function getLibrary(opts: { limit?: number } = {}): Promise<LibraryItem[]> {
-  const list = [...fixtureLibrary].sort(
+  const db = privateDb();
+  const all = db
+    ? rows(await db.from("library_items").select("*").eq("is_active", true), "library_items").map((r) =>
+        mapLibraryItem(r as LibraryRow),
+      )
+    : fixtureLibrary;
+  const list = [...all].sort(
     (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || a.title.localeCompare(b.title),
   );
   return opts.limit ? list.slice(0, opts.limit) : list;

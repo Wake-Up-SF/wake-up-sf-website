@@ -1,9 +1,9 @@
 // src/lib/data/posts.ts — the only place that knows the `member_posts` table.
 // A facilitator adds each row by hand (title, author, link, blurb); nothing is imported from Substack.
-// Members-only, like the library: TODO(supabase): read server-side with the service-role client
-//   .from('member_posts').select(...).eq('is_published', true).order('published_at', { ascending: false })
+// Members-only, like the library: read server-side with the service-role client, only from /sangha pages.
 // Row shape per plans/SETUP-supabase-vercel.md §3a.
 import type { MemberPost } from "@/lib/types";
+import { privateDb, rows } from "@/lib/supabase/server";
 import { fixtureMemberPosts } from "./fixtures";
 
 export type MemberPostRow = {
@@ -31,6 +31,16 @@ export function mapMemberPost(row: MemberPostRow): MemberPost {
 }
 
 export async function getMemberPosts(opts: { limit?: number } = {}): Promise<MemberPost[]> {
+  const db = privateDb();
+  if (db) {
+    let q = db
+      .from("member_posts")
+      .select("*")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false, nullsFirst: false });
+    if (opts.limit) q = q.limit(opts.limit);
+    return rows(await q, "member_posts").map((r) => mapMemberPost(r as MemberPostRow));
+  }
   const list = [...fixtureMemberPosts].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
   return opts.limit ? list.slice(0, opts.limit) : list;
 }
